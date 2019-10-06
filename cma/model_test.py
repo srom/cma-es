@@ -63,7 +63,7 @@ class TestCMA(unittest.TestCase):
             )
 
         cma = CMA(
-            initial_solution=[3., 7.],
+            initial_solution=[-2., 7.],
             initial_step_size=1.,
             fitness_function=fitness_fn
         )
