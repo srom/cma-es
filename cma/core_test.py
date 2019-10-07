@@ -123,10 +123,6 @@ class TestCMA(unittest.TestCase):
 
         x1, x2, x3, x4 = cma.best_solution()
 
-        # print(cma.generation)
-        # print(x1, x2, x3, x4)
-        # print(fitness_fn(np.array([[x1, x2, x3, x4]])))
-
         # Assert that global minimum is reached
         cond = (
             np.isclose(x1, 420.9687, rtol=1e-3) and
