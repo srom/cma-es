@@ -17,7 +17,8 @@ class CMA(object):
         initial_solution,
         initial_step_size,
         fitness_function,
-        no_effect_cond=1e-10,
+        population_size=None,
+        no_effect_cond=1e-12,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
@@ -33,6 +34,7 @@ class CMA(object):
         self.dimension = len(initial_solution)
         self.initial_step_size = initial_step_size
         self.fitness_fn = fitness_function
+        self.population_size = population_size
         self.no_effect_cond = no_effect_cond
 
         self.initialized = False
@@ -45,7 +47,10 @@ class CMA(object):
         # Solution dimension
         self.N = tf.constant(self.dimension, dtype=tf.float64)
         # Population size
-        self.λ = tf.floor(tf.math.log(self.N) * 3 + 8)
+        if self.population_size is not None:
+            self.λ = tf.constant(self.population_size, dtype=tf.float64)
+        else:
+            self.λ = tf.floor(tf.math.log(self.N) * 3 + 8)
         # Number of surviving individuals from one generation to the next
         self.μ = tf.floor(self.λ / 2)
         # Recombination weights

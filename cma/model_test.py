@@ -15,6 +15,8 @@ class TestCMA(unittest.TestCase):
         tf.random.set_seed(444)
 
     def test_six_hump_camel_fn(self):
+        num_max_epochs = 100
+
         def fitness_fn(x):
             """
             Six-Hump Camel Function
@@ -25,8 +27,6 @@ class TestCMA(unittest.TestCase):
                 x[:,0] * x[:,1] +
                 (-4 + 4 * x[:,1]**2) * x[:,1]**2
             )
-
-        num_max_epochs = 100
 
         cma = CMA(
             initial_solution=[1.5, 2.4],
@@ -54,6 +54,8 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_branin_fn(self):
+        num_max_epochs = 100
+
         def fitness_fn(x):
             """
             Branin Function
@@ -69,8 +71,6 @@ class TestCMA(unittest.TestCase):
                 (a * (x[:,1] - b * x[:,0]**2 + c * x[:,0] - r))**2 +
                 s * (1 - t) * tf.cos(x[:,0]) + s
             )
-
-        num_max_epochs = 100
 
         cma = CMA(
             initial_solution=[-2., 7.],
@@ -100,6 +100,40 @@ class TestCMA(unittest.TestCase):
 
         # Early stopping occured
         self.assertTrue(cma.generation < num_max_epochs)
+
+    @unittest.skip('Needs fixing')
+    def test_schwefel_fn(self):
+        num_max_epochs = 100
+
+        def fitness_fn(x):
+            """
+            Schwefel Function
+            https://www.sfu.ca/~ssurjano/branin.html
+            """
+            dimension = tf.cast(tf.shape(x)[1], tf.float64)
+            return 418.9829 * dimension - tf.reduce_sum(x * tf.sin(tf.sqrt(tf.abs(x))), axis=1)
+
+        cma = CMA(
+            initial_solution=[400., -400., 400., 400.],
+            initial_step_size=50.,
+            fitness_function=fitness_fn,
+            population_size=100,
+        )
+        cma.search(num_max_epochs)
+
+        x1, x2, x3, x4 = cma.best_solution()
+
+        print(x1, x2, x3, x4)
+        print(fitness_fn(tf.convert_to_tensor(np.array([[x1, x2, x3, x4]]))))
+
+        # Assert that global minimum is reached
+        cond = (
+            np.isclose(x1, 420.9687, rtol=1e-3) and
+            np.isclose(x2, 420.9687, rtol=1e-3) and
+            np.isclose(x3, 420.9687, rtol=1e-3) and
+            np.isclose(x4, 420.9687, rtol=1e-3)
+        )
+        self.assertTrue(cond)
 
 
 if __name__ == '__main__':
