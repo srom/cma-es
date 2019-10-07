@@ -101,9 +101,10 @@ class CMA(object):
             # ----------------------------------------
             # (1) Sample a new population of solutions
             # ----------------------------------------
+            L_cholesky = tf.linalg.cholesky(tf.square(self.σ) * self.C)
             population_dist = tfp.distributions.MultivariateNormalTriL(
                 loc=self.m,
-                scale_tril=tf.linalg.cholesky(tf.square(self.σ) * self.C)
+                scale_tril=L_cholesky
             )
             x = population_dist.sample(tf.cast(self.λ, tf.int32))
 
@@ -153,10 +154,25 @@ class CMA(object):
             # ---------------------
             # (4) Step-size control
             # ---------------------
+            # Retrieve LDL decomposition from cholesky matrix
+            S_d = tf.linalg.diag_part(L_cholesky)
+            S = tf.linalg.tensor_diag(S_d)
+            S_inv = tf.linalg.tensor_diag(tf.math.reciprocal(S_d))
+            self.D = S**2
+            D_inv = tf.linalg.tensor_diag(tf.math.reciprocal(tf.linalg.diag_part(self.D)))
+            L = tf.matmul(L_cholesky, S_inv)
+
+            # Compute C^(-1/2) = L * inv(D) * transpose(L)
+            C_sqrt_inv = tf.matmul(tf.matmul(L, D_inv), tf.transpose(L))
+
+            # Update evolution path for sigma
             self.p_σ.assign((
                 (1 - self.cσ) * self.p_σ +
-                tf.sqrt(self.cσ * (2 - self.cσ) * self.μeff) * y
+                tf.sqrt(self.cσ * (2 - self.cσ) * self.μeff) *
+                tf.squeeze(tf.matmul(C_sqrt_inv, y[:,tf.newaxis]))
             ))
+
+            # Update sigma
             sigma = self.σ * tf.exp((self.cσ / self.damps) * ((tf.norm(self.p_σ) / self.chiN) - 1))
             self.σ.assign(sigma)
 
