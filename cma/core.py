@@ -18,6 +18,7 @@ class CMA(object):
         initial_step_size,
         fitness_function,
         population_size=None,
+        selection_size=None,
         no_effect_cond=1e-12,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
@@ -35,6 +36,7 @@ class CMA(object):
         self.initial_step_size = initial_step_size
         self.fitness_fn = fitness_function
         self.population_size = population_size
+        self.selection_size = selection_size
         self.no_effect_cond = no_effect_cond
 
         self.initialized = False
@@ -52,7 +54,10 @@ class CMA(object):
         else:
             self.λ = tf.floor(tf.math.log(self.N) * 3 + 8)
         # Number of surviving individuals from one generation to the next
-        self.μ = tf.floor(self.λ / 2)
+        if self.selection_size is not None:
+            self.μ = tf.constant(self.selection_size, dtype=tf.float64)
+        else:
+            self.μ = tf.floor(self.λ / 2)
         # Recombination weights
         self.weights = tf.concat([
             tf.math.log(self.μ + 0.5) - tf.math.log(tf.range(1, self.μ + 1)),
@@ -104,7 +109,7 @@ class CMA(object):
             L_cholesky = tf.linalg.cholesky(tf.square(self.σ) * self.C)
             population_dist = tfp.distributions.MultivariateNormalTriL(
                 loc=self.m,
-                scale_tril=L_cholesky
+                scale_tril=tf.linalg.cholesky(tf.square(self.σ) * self.C)
             )
             x = population_dist.sample(tf.cast(self.λ, tf.int32))
 
@@ -114,6 +119,7 @@ class CMA(object):
             # Evaluate and sort solutions
             f_x = self.fitness_fn(x)
             x_sorted = tf.gather(x, tf.argsort(f_x))
+            self.current_population = x_sorted
 
             # The new mean is a weighted average of the top-μ solutions
             x_diff = (x_sorted - self.m)

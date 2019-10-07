@@ -1,5 +1,3 @@
 numpy
-pandas
-jupyter
 tensorflow>=2.0
 tensorflow-probability

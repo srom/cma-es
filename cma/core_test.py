@@ -102,7 +102,7 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_schwefel_fn(self):
-        num_max_epochs = 200
+        num_max_epochs = 500
 
         def fitness_fn(x):
             """
@@ -116,12 +116,16 @@ class TestCMA(unittest.TestCase):
         # e.g. [400., 400., -400., 400.] fails (it settles for a local minimum)
         cma = CMA(
             initial_solution=[400., 400., 400., 400.],
-            initial_step_size=10.,
+            initial_step_size=50.,
             fitness_function=fitness_fn,
         )
         cma.search(num_max_epochs)
 
         x1, x2, x3, x4 = cma.best_solution()
+
+        # print(cma.generation)
+        # print(x1, x2, x3, x4)
+        # print(fitness_fn(np.array([[x1, x2, x3, x4]])))
 
         # Assert that global minimum is reached
         cond = (
@@ -131,6 +135,9 @@ class TestCMA(unittest.TestCase):
             np.isclose(x4, 420.9687, rtol=1e-3)
         )
         self.assertTrue(cond)
+
+        # Early stopping occured
+        self.assertTrue(cma.generation < num_max_epochs)
 
 
 if __name__ == '__main__':
