@@ -15,7 +15,7 @@ class TestCMA(unittest.TestCase):
         tf.random.set_seed(444)
 
     def test_six_hump_camel_fn(self):
-        num_max_epochs = 200
+        num_max_epochs = 100
 
         def fitness_fn(x):
             """
@@ -54,7 +54,7 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_branin_fn(self):
-        num_max_epochs = 200
+        num_max_epochs = 100
 
         def fitness_fn(x):
             """
@@ -102,7 +102,7 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_schwefel_fn(self):
-        num_max_epochs = 500
+        num_max_epochs = 100
 
         def fitness_fn(x):
             """
@@ -131,9 +131,6 @@ class TestCMA(unittest.TestCase):
             np.isclose(x4, 420.9687, rtol=1e-3)
         )
         self.assertTrue(cond)
-
-        # Early stopping occured
-        self.assertTrue(cma.generation < num_max_epochs)
 
 
 if __name__ == '__main__':

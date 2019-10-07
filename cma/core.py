@@ -18,7 +18,6 @@ class CMA(object):
         initial_step_size,
         fitness_function,
         population_size=None,
-        selection_size=None,
         no_effect_cond=1e-12,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
@@ -30,13 +29,14 @@ class CMA(object):
             raise ValueError(f'Initial step size must be a number greater than zero')
         elif not callable(fitness_function):
             raise ValueError(f'Fitness function must be callable')
+        elif population_size is not None and population_size <= 4:
+            raise ValueError(f'Population size must be at least 4')
 
         self.initial_solution = initial_solution
         self.dimension = len(initial_solution)
         self.initial_step_size = initial_step_size
         self.fitness_fn = fitness_function
         self.population_size = population_size
-        self.selection_size = selection_size
         self.no_effect_cond = no_effect_cond
 
         self.initialized = False
@@ -54,10 +54,7 @@ class CMA(object):
         else:
             self.λ = tf.floor(tf.math.log(self.N) * 3 + 8)
         # Number of surviving individuals from one generation to the next
-        if self.selection_size is not None:
-            self.μ = tf.constant(self.selection_size, dtype=tf.float64)
-        else:
-            self.μ = tf.floor(self.λ / 2)
+        self.μ = tf.floor(self.λ / 2)
         # Recombination weights
         self.weights = tf.concat([
             tf.math.log(self.μ + 0.5) - tf.math.log(tf.range(1, self.μ + 1)),
@@ -106,7 +103,6 @@ class CMA(object):
             # ----------------------------------------
             # (1) Sample a new population of solutions
             # ----------------------------------------
-            L_cholesky = tf.linalg.cholesky(tf.square(self.σ) * self.C)
             population_dist = tfp.distributions.MultivariateNormalTriL(
                 loc=self.m,
                 scale_tril=tf.linalg.cholesky(tf.square(self.σ) * self.C)
@@ -160,22 +156,10 @@ class CMA(object):
             # ---------------------
             # (4) Step-size control
             # ---------------------
-            # Retrieve LDL decomposition from cholesky matrix
-            S_d = tf.linalg.diag_part(L_cholesky)
-            S = tf.linalg.tensor_diag(S_d)
-            S_inv = tf.linalg.tensor_diag(tf.math.reciprocal(S_d))
-            self.D = S**2
-            D_inv = tf.linalg.tensor_diag(tf.math.reciprocal(tf.linalg.diag_part(self.D)))
-            L = tf.matmul(L_cholesky, S_inv)
-
-            # Compute C^(-1/2) = L * inv(D) * transpose(L)
-            C_sqrt_inv = tf.matmul(tf.matmul(L, D_inv), tf.transpose(L))
-
             # Update evolution path for sigma
             self.p_σ.assign((
                 (1 - self.cσ) * self.p_σ +
-                tf.sqrt(self.cσ * (2 - self.cσ) * self.μeff) *
-                tf.squeeze(tf.matmul(C_sqrt_inv, y[:,tf.newaxis]))
+                tf.sqrt(self.cσ * (2 - self.cσ) * self.μeff) * y
             ))
 
             # Update sigma
@@ -195,4 +179,8 @@ class CMA(object):
         # NoEffectCoord: stop if adding 0.2 stdev in any single coordinate does not change m
         m_ = self.m + 0.2 * self.σ * tf.linalg.diag_part(self.C)
         no_effect_cond = tf.reduce_all(tf.less(tf.abs(self.m - m_), self.no_effect_cond))
-        return no_effect_cond
+
+        # Stop if sigma gets too large
+        sigma_too_large = tf.greater(self.σ, 1e10)
+
+        return no_effect_cond or sigma_too_large
