@@ -17,6 +17,7 @@ class CMA(object):
         initial_solution,
         initial_step_size,
         fitness_function,
+        no_effect_cond=1e-10,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
@@ -32,6 +33,7 @@ class CMA(object):
         self.dimension = len(initial_solution)
         self.initial_step_size = initial_step_size
         self.fitness_fn = fitness_function
+        self.no_effect_cond = no_effect_cond
 
         self.initialized = False
         self.generation = 0
@@ -163,4 +165,7 @@ class CMA(object):
         return self.m.read_value().numpy()
 
     def termination_criterion_met(self):
-        return False
+        # NoEffectCoord: stop if adding 0.2 stdev in any single coordinate does not change m
+        m_ = self.m + 0.2 * self.σ * tf.linalg.diag_part(self.C)
+        no_effect_cond = tf.reduce_all(tf.less(tf.abs(self.m - m_), self.no_effect_cond))
+        return no_effect_cond

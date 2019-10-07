@@ -26,15 +26,18 @@ class TestCMA(unittest.TestCase):
                 (-4 + 4 * x[:,1]**2) * x[:,1]**2
             )
 
+        num_max_epochs = 100
+
         cma = CMA(
             initial_solution=[1.5, 2.4],
             initial_step_size=0.5,
             fitness_function=fitness_fn
         )
-        cma.search(100)
+        cma.search(num_max_epochs)
 
         x1, x2 = cma.best_solution()
 
+        # Global minimum is reached
         cond = (
             (
                 np.isclose(x1, 0.0898, rtol=1e-3) and
@@ -46,6 +49,9 @@ class TestCMA(unittest.TestCase):
             )
         )
         self.assertTrue(cond)
+
+        # Early stopping occured
+        self.assertTrue(cma.generation < num_max_epochs)
 
     def test_branin_fn(self):
         def fitness_fn(x):
@@ -64,15 +70,18 @@ class TestCMA(unittest.TestCase):
                 s * (1 - t) * tf.cos(x[:,0]) + s
             )
 
+        num_max_epochs = 100
+
         cma = CMA(
             initial_solution=[-2., 7.],
             initial_step_size=1.,
             fitness_function=fitness_fn
         )
-        cma.search(100)
+        cma.search(num_max_epochs)
 
         x1, x2 = cma.best_solution()
 
+        # Assert that global minimum is reached
         cond = (
             (
                 np.isclose(x1, -np.pi, rtol=1e-3) and
@@ -88,6 +97,9 @@ class TestCMA(unittest.TestCase):
             )
         )
         self.assertTrue(cond)
+
+        # Early stopping occured
+        self.assertTrue(cma.generation < num_max_epochs)
 
 
 if __name__ == '__main__':
