@@ -94,9 +94,9 @@ class CMA(object):
             # ----------------------------------------
             # (1) Sample a new population of solutions
             # ----------------------------------------
-            population_dist = tfp.distributions.MultivariateNormalFullCovariance(
+            population_dist = tfp.distributions.MultivariateNormalTriL(
                 loc=self.m,
-                covariance_matrix=tf.square(self.σ) * self.C
+                scale_tril=tf.linalg.cholesky(tf.square(self.σ) * self.C)
             )
             x = population_dist.sample(tf.cast(self.λ, tf.int32))
 
@@ -109,13 +109,13 @@ class CMA(object):
 
             # The new mean is a weighted average of the top-μ solutions
             x_diff = (x_sorted - self.m)
-            x_weighted = tf.reduce_sum(tf.multiply(x_diff, self.weights), axis=0)
-            self.m.assign_add(x_weighted)
+            x_avg = tf.reduce_sum(tf.multiply(x_diff, self.weights), axis=0)
+            self.m.assign_add(x_avg)
 
             # ----------------------------------
             # (3) Adapting the Covariance Matrix
             # ----------------------------------
-            y = x_weighted / self.σ
+            y = x_avg / self.σ
 
             # Udpdate evolution path for Rank-one-Update
             p_C = (
@@ -126,8 +126,8 @@ class CMA(object):
 
             # Compute Rank-μ-Update
             C_m = tf.map_fn(
-                lambda e: e[:,tf.newaxis]*tf.transpose(e[:,tf.newaxis]),
-                x_diff / self.σ,
+                fn=lambda e: e * tf.transpose(e),
+                elems=(x_diff / self.σ)[:,tf.newaxis],
             )
             y_s = tf.reduce_sum(
                 tf.multiply(C_m, self.weights[:,tf.newaxis]),
@@ -135,9 +135,10 @@ class CMA(object):
             )
 
             # Combine Rank-one-Update and Rank-μ-Update
+            p_C_matrix = self.p_C[:,tf.newaxis]
             C = (
                 (1 - self.c1 - self.cμ) * self.C +
-                self.c1 * self.p_C[:,tf.newaxis] * tf.transpose(self.p_C[:,tf.newaxis]) +
+                self.c1 * p_C_matrix * tf.transpose(p_C_matrix) +
                 self.cμ * y_s
             )
             self.C.assign(C)
@@ -152,7 +153,7 @@ class CMA(object):
             sigma = self.σ * tf.exp((self.cσ / self.damps) * ((tf.norm(self.p_σ) / self.chiN) - 1))
             self.σ.assign(sigma)
 
-            # Check termination criterion and terminate early if necessary
+            # Check termination criteria and terminate early if necessary
             if self.termination_criterion_met():
                 break
 

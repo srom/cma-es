@@ -8,9 +8,13 @@ from .model import CMA
 
 class TestCMA(unittest.TestCase):
 
-    def test_six_hump_camel_fn(self):
+    def setUp(self, *args, **kwargs):
+        super().setUp(*args, **kwargs)
+
+        tf.keras.backend.clear_session()
         tf.random.set_seed(444)
 
+    def test_six_hump_camel_fn(self):
         def fitness_fn(x):
             """
             Six-Hump Camel Function
@@ -44,8 +48,6 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cond)
 
     def test_branin_fn(self):
-        tf.random.set_seed(444)
-
         def fitness_fn(x):
             """
             Branin Function
