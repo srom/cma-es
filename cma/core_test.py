@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from .model import CMA
+from .core import CMA
 
 
 class TestCMA(unittest.TestCase):
