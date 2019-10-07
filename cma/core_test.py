@@ -113,7 +113,7 @@ class TestCMA(unittest.TestCase):
             return 418.9829 * dimension - tf.reduce_sum(x * tf.sin(tf.sqrt(tf.abs(x))), axis=1)
 
         # NOTE: Fails if the initial solution is too far from the optimal solution
-        # e.g. [400., 400., -400., 400.] fails.
+        # e.g. [400., 400., -400., 400.] fails (it settles for a local minimum)
         cma = CMA(
             initial_solution=[400., 400., 400., 400.],
             initial_step_size=10.,

@@ -5,7 +5,7 @@ A Tensorflow 2.0 implementation.
 
 ## Examples
 
-Check unit tests for a gentle walkthrough: `cma/model_test.py`
+Check unit tests for a gentle walkthrough: `cma/core_test.py`
 
 ## Resources
 
