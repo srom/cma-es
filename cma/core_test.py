@@ -37,7 +37,7 @@ class TestCMA(unittest.TestCase):
 
         x1, x2 = cma.best_solution()
 
-        # Global minimum is reached
+        # Assert global minimum has been reached
         cond = (
             (
                 np.isclose(x1, 0.0898, rtol=1e-3) and
@@ -81,7 +81,7 @@ class TestCMA(unittest.TestCase):
 
         x1, x2 = cma.best_solution()
 
-        # Assert that global minimum is reached
+        # Assert global minimum has been reached
         cond = (
             (
                 np.isclose(x1, -np.pi, rtol=1e-3) and
@@ -113,17 +113,19 @@ class TestCMA(unittest.TestCase):
             return 418.9829 * dimension - tf.reduce_sum(x * tf.sin(tf.sqrt(tf.abs(x))), axis=1)
 
         # NOTE: Fails if the initial solution is too far from the optimal solution
-        # e.g. [400., 400., -400., 400.] fails (it settles for a local minimum)
+        # e.g. [400., 400., -400., 400.] fails to find the global minimum and
+        # settles for (420.9687, 420.9687, -302.5249, 420.9687) instead
         cma = CMA(
             initial_solution=[400., 400., 400., 400.],
             initial_step_size=50.,
             fitness_function=fitness_fn,
+            enforce_bounds=[[-500, 500]] * 4,
         )
         cma.search(num_max_epochs)
 
         x1, x2, x3, x4 = cma.best_solution()
 
-        # Assert that global minimum is reached
+        # Assert global minimum has been reached
         cond = (
             np.isclose(x1, 420.9687, rtol=1e-3) and
             np.isclose(x2, 420.9687, rtol=1e-3) and

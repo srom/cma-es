@@ -1,7 +1,7 @@
 Covariance Matrix Adaptation Evolution Strategy (CMA-ES)
 --------------------------------------------------------
 
-A Tensorflow 2.0 implementation.
+A Tensorflow v2 implementation.
 
 ## Examples
 
