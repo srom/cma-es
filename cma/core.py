@@ -221,7 +221,7 @@ class CMA(object):
     def termination_criterion_met(self, return_details=False):
         # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis
         # direction of C does not change m
-        i = self.generation % int(self.dimension)
+        i = self.generation % self.dimension
         diag_D = tf.linalg.diag_part(self.D)
         m_nea = self.m + 0.1 * self.σ * diag_D[i] * self.B[i,:]
         no_effect_axis = tf.reduce_all(
