@@ -102,7 +102,7 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_schwefel_fn(self):
-        num_max_epochs = 500
+        num_max_epochs = 100
 
         def fitness_fn(x):
             """

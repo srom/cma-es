@@ -131,14 +131,17 @@ class CMA(object):
             y = tf.matmul(z, tf.matmul(self.B, self.D))          # ∼ N(0, C)
             x = self.m + self.σ * y                              # ∼ N(m, σ²C)
 
+            penalty = 0.
             if self._enforce_bounds:
-                x = tf.clip_by_value(x, self.clip_value_min, self.clip_value_max)
+                x_corr = tf.clip_by_value(x, self.clip_value_min, self.clip_value_max)
+                penalty = tf.norm(x - x_corr)**2
+                x = x_corr
 
             # -------------------------------------------------
             # (2) Selection and Recombination: Moving the Mean
             # -------------------------------------------------
             # Evaluate and sort solutions
-            f_x = self.fitness_fn(x)
+            f_x = self.fitness_fn(x) + penalty
             x_sorted = tf.gather(x, tf.argsort(f_x))
             self.current_population = x_sorted
 
