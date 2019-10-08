@@ -102,12 +102,12 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_schwefel_fn(self):
-        num_max_epochs = 100
+        num_max_epochs = 500
 
         def fitness_fn(x):
             """
             Schwefel Function
-            https://www.sfu.ca/~ssurjano/branin.html
+            https://www.sfu.ca/~ssurjano/schwef.html
             """
             dimension = tf.cast(tf.shape(x)[1], tf.float64)
             return 418.9829 * dimension - tf.reduce_sum(x * tf.sin(tf.sqrt(tf.abs(x))), axis=1)

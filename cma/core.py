@@ -17,8 +17,7 @@ class CMA(object):
         fitness_function,
         population_size=None,
         enforce_bounds=None,
-        termination_no_effect_coord=1e-12,
-        termination_sigma_too_large=1e12,
+        termination_no_effect=1e-12,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
@@ -45,8 +44,7 @@ class CMA(object):
         self.fitness_fn = fitness_function
         self.population_size = population_size
         self.enforce_bounds = enforce_bounds
-        self.termination_no_effect_coord = termination_no_effect_coord
-        self.termination_sigma_too_large = termination_sigma_too_large
+        self.termination_no_effect = termination_no_effect
 
         self._initialized = False
         self._enforce_bounds = self.enforce_bounds is not None
@@ -198,6 +196,7 @@ class CMA(object):
 
             # Update sigma
             sigma = self.σ * tf.exp((self.cσ / self.damps) * ((tf.norm(self.p_σ) / self.chiN) - 1))
+            self._prev_sigma = tf.identity(self.σ)
             self.σ.assign(sigma)
 
             # ----------------------------------------
@@ -205,6 +204,7 @@ class CMA(object):
             # ----------------------------------------
             eigenvalues, eigenvectors = tf.linalg.eigh(self.C)
             self.B.assign(eigenvectors)
+            self._prev_D = tf.identity(self.D)
             self.D.assign(tf.linalg.tensor_diag(tf.sqrt(eigenvalues)))
 
             # ---------------------------------
@@ -218,15 +218,46 @@ class CMA(object):
     def best_solution(self):
         return self.m.read_value().numpy()
 
-    def termination_criterion_met(self):
+    def termination_criterion_met(self, return_details=False):
+        # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis
+        # direction of C does not change m
+        i = self.generation % int(self.dimension)
+        diag_D = tf.linalg.diag_part(self.D)
+        m_nea = self.m + 0.1 * self.σ * diag_D[i] * self.B[i,:]
+        no_effect_axis = tf.reduce_all(
+            tf.less(tf.abs(self.m - m_nea), self.termination_no_effect))
+
         # NoEffectCoord: stop if adding 0.2 stdev in any single coordinate does not change m
-        m_ = self.m + 0.2 * self.σ * tf.linalg.diag_part(self.C)
-        no_effect_coord = tf.reduce_all(tf.less(tf.abs(self.m - m_), self.termination_no_effect_coord))
+        m_nec = self.m + 0.2 * self.σ * tf.linalg.diag_part(self.C)
+        no_effect_coord = tf.reduce_any(
+            tf.less(tf.abs(self.m - m_nec), self.termination_no_effect))
 
-        # Stop if sigma gets too large
-        sigma_too_large = tf.greater(self.σ, self.termination_sigma_too_large)
+        # ConditionCov: stop if the condition number of the covariance matrix becomes too large
+        max_D = tf.reduce_max(diag_D)
+        min_D = tf.reduce_min(diag_D)
+        condition_number = max_D**2 / min_D**2
+        condition_cov = tf.greater(condition_number, 1e14)
 
-        return no_effect_coord or sigma_too_large
+        # TolXUp: stop if σ × max(D) increased by more than 10^4.
+        # This usually indicates a far too small initial σ, or divergent behavior.
+        prev_max_D = tf.reduce_max(tf.linalg.diag_part(self._prev_D))
+        tol_x_up_diff = self.σ * max_D - self._prev_sigma * prev_max_D
+        tol_x_up = tf.greater(tf.abs(tol_x_up_diff), 1e4)
+
+        do_terminate = no_effect_axis or no_effect_coord or condition_cov or tol_x_up
+
+        if not return_details:
+            return do_terminate
+        else:
+            return (
+                do_terminate,
+                dict(
+                    no_effect_axis=bool(no_effect_axis.numpy()),
+                    no_effect_coord=bool(no_effect_coord.numpy()),
+                    condition_cov=bool(condition_cov.numpy()),
+                    tol_x_up=bool(tol_x_up.numpy()),
+                )
+            )
 
     def reset(self):
         self._initialized = False
