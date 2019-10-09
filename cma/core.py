@@ -122,7 +122,7 @@ class CMA(object):
         self._initialized = True
         return self
 
-    def search(self, max_num_epochs):
+    def search(self, max_num_epochs=500):
         if not self._initialized:
             self.init()
 
