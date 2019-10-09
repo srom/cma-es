@@ -215,7 +215,7 @@ class CMA(object):
                 logger.error('Eigen decomposition was not successful - aborting')
                 break
 
-            diag_D = tf.sqrt(tf.abs(eigenvalues))
+            diag_D = tf.sqrt(eigenvalues)
             D = tf.linalg.tensor_diag(diag_D)
             B = eigenvectors
 
