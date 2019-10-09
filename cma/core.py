@@ -242,6 +242,13 @@ class CMA(object):
             if self.termination_criterion_met():
                 break
 
+        if self.generation == max_num_epochs:
+            msg = (
+                'Maximum number of epochs reached (i.e. no early termination occured) - '
+                'consider running the search once more.'
+            )
+            logger.warning(msg)
+
         return self
 
     def best_solution(self):
