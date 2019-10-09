@@ -1,5 +1,10 @@
+import logging
+
 import numpy as np
 import tensorflow as tf
+
+
+logger = logging.getLogger(__name__)
 
 
 class CMA(object):
@@ -143,12 +148,14 @@ class CMA(object):
             # Evaluate and sort solutions
             f_x = self.fitness_fn(x) + penalty
             x_sorted = tf.gather(x, tf.argsort(f_x))
+
+            # Keep track of the current population for inspection purpose
             self.current_population = x_sorted
 
             # The new mean is a weighted average of the top-μ solutions
             x_diff = (x_sorted - self.m)
             x_mean = tf.reduce_sum(tf.multiply(x_diff, self.weights), axis=0)
-            self.m.assign_add(x_mean)
+            m = self.m + x_mean
 
             # -----------------------------------
             # (3) Adapting the Covariance Matrix
@@ -159,8 +166,7 @@ class CMA(object):
                 (1 - self.cc) * self.p_C +
                 tf.sqrt(self.cc * (2 - self.cc) * self.μeff) * y_mean
             )
-            p_C_matrix = self.p_C[:, tf.newaxis]
-            self.p_C.assign(p_C)
+            p_C_matrix = p_C[:, tf.newaxis]
 
             # Compute Rank-μ-Update
             C_m = tf.map_fn(
@@ -183,7 +189,6 @@ class CMA(object):
             C_upper = tf.linalg.band_part(C, 0, -1)
             C_upper_no_diag = C_upper - tf.linalg.tensor_diag(tf.linalg.diag_part(C_upper))
             C = C_upper + tf.transpose(C_upper_no_diag)
-            self.C.assign(C)
 
             # ----------------------
             # (4) Step-size control
@@ -192,26 +197,47 @@ class CMA(object):
             D_inv = tf.linalg.tensor_diag(tf.math.reciprocal(tf.linalg.diag_part(self.D)))
             C_inv_squared = tf.matmul(tf.matmul(self.B, D_inv), tf.transpose(self.B))
             C_inv_squared_y = tf.squeeze(tf.matmul(C_inv_squared, y_mean[:, tf.newaxis]))
-            self.p_σ.assign((
+            p_σ = (
                 (1 - self.cσ) * self.p_σ +
                 tf.sqrt(self.cσ * (2 - self.cσ) * self.μeff) * C_inv_squared_y
-            ))
+            )
 
             # Update sigma
-            sigma = self.σ * tf.exp((self.cσ / self.damps) * ((tf.norm(self.p_σ) / self.chiN) - 1))
-            self._prev_sigma = tf.identity(self.σ)
-            self.σ.assign(sigma)
+            σ = self.σ * tf.exp((self.cσ / self.damps) * ((tf.norm(p_σ) / self.chiN) - 1))
 
             # ----------------------------------------
             # (5) Update B and D: eigen decomposition
             # ----------------------------------------
-            eigenvalues, eigenvectors = tf.linalg.eigh(self.C)
-            self.B.assign(eigenvectors)
+            try:
+                eigenvalues, eigenvectors = tf.linalg.eigh(C)
+            except tf.errors.InvalidArgumentError as e:
+                logger.error(e)
+                logger.error('Eigen decomposition was not successful - aborting')
+                break
+
+            diag_D = tf.sqrt(tf.abs(eigenvalues))
+            D = tf.linalg.tensor_diag(diag_D)
+            B = eigenvectors
+
+            # -------------------------------
+            # (6) Assign new variable values
+            # -------------------------------
+            # Cache computations necessary to determine termination criteria
+            self._prev_sigma = tf.identity(self.σ)
             self._prev_D = tf.identity(self.D)
-            self.D.assign(tf.linalg.tensor_diag(tf.sqrt(eigenvalues)))
+            self._diag_D = diag_D
+
+            # Assign values
+            self.p_C.assign(p_C)
+            self.p_σ.assign(p_σ)
+            self.C.assign(C)
+            self.σ.assign(σ)
+            self.B.assign(B)
+            self.D.assign(D)
+            self.m.assign(m)
 
             # ---------------------------------
-            # (6) Terminate early if necessary
+            # (7) Terminate early if necessary
             # ---------------------------------
             if self.termination_criterion_met():
                 break
@@ -225,8 +251,7 @@ class CMA(object):
         # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis
         # direction of C does not change m
         i = self.generation % self.dimension
-        diag_D = tf.linalg.diag_part(self.D)
-        m_nea = self.m + 0.1 * self.σ * diag_D[i] * self.B[i,:]
+        m_nea = self.m + 0.1 * self.σ * tf.squeeze(self._diag_D[i] * self.B[i,:])
         no_effect_axis = tf.reduce_all(
             tf.less(tf.abs(self.m - m_nea), self.termination_no_effect))
 
@@ -236,8 +261,8 @@ class CMA(object):
             tf.less(tf.abs(self.m - m_nec), self.termination_no_effect))
 
         # ConditionCov: stop if the condition number of the covariance matrix becomes too large
-        max_D = tf.reduce_max(diag_D)
-        min_D = tf.reduce_min(diag_D)
+        max_D = tf.reduce_max(self._diag_D)
+        min_D = tf.reduce_min(self._diag_D)
         condition_number = max_D**2 / min_D**2
         condition_cov = tf.greater(condition_number, 1e14)
 

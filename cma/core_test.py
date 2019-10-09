@@ -119,6 +119,8 @@ class TestCMA(unittest.TestCase):
             initial_solution=[400., 400., 400., 400.],
             initial_step_size=50.,
             fitness_function=fitness_fn,
+            # Test setting the population and enforcing the bounds:
+            population_size=20,
             enforce_bounds=[[-500, 500]] * 4,
         )
         cma.search(num_max_epochs)
