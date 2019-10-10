@@ -23,6 +23,7 @@ class CMA(object):
         population_size=None,
         enforce_bounds=None,
         termination_no_effect=1e-12,
+        store_trace=False,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
@@ -42,7 +43,6 @@ class CMA(object):
             raise ValueError(f'Bounds must be a 2D array but got an array of dim {ndim}')
 
         self.generation = 0
-        self.current_population = None
         self.initial_solution = initial_solution
         self.dimension = len(initial_solution)
         self.initial_step_size = initial_step_size
@@ -50,6 +50,10 @@ class CMA(object):
         self.population_size = population_size
         self.enforce_bounds = enforce_bounds
         self.termination_no_effect = termination_no_effect
+        self.store_trace = store_trace
+
+        if self.store_trace:
+            self.trace = []
 
         self._initialized = False
         self._enforce_bounds = self.enforce_bounds is not None
@@ -149,8 +153,17 @@ class CMA(object):
             f_x = self.fitness_fn(x) + penalty
             x_sorted = tf.gather(x, tf.argsort(f_x))
 
-            # Keep track of the current population for inspection purpose
-            self.current_population = x_sorted
+            if self.store_trace:
+                self.trace.append({
+                    'm': self.m.read_value().numpy(),
+                    'σ': self.σ.read_value().numpy(),
+                    'C': self.C.read_value().numpy(),
+                    'p_σ': self.p_σ.read_value().numpy(),
+                    'p_C': self.p_C.read_value().numpy(),
+                    'B': self.B.read_value().numpy(),
+                    'D': self.D.read_value().numpy(),
+                    'population': x_sorted.numpy(),
+                })
 
             # The new mean is a weighted average of the top-μ solutions
             x_diff = (x_sorted - self.m)
@@ -259,13 +272,13 @@ class CMA(object):
         # direction of C does not change m
         i = self.generation % self.dimension
         m_nea = self.m + 0.1 * self.σ * tf.squeeze(self._diag_D[i] * self.B[i,:])
-        no_effect_axis = tf.reduce_all(
-            tf.less(tf.abs(self.m - m_nea), self.termination_no_effect))
+        m_nea_diff = tf.abs(self.m - m_nea)
+        no_effect_axis = tf.reduce_all(tf.less(m_nea_diff, self.termination_no_effect))
 
         # NoEffectCoord: stop if adding 0.2 stdev in any single coordinate does not change m
         m_nec = self.m + 0.2 * self.σ * tf.linalg.diag_part(self.C)
-        no_effect_coord = tf.reduce_any(
-            tf.less(tf.abs(self.m - m_nec), self.termination_no_effect))
+        m_nec_diff = tf.abs(self.m - m_nec)
+        no_effect_coord = tf.reduce_any(tf.less(m_nec_diff, self.termination_no_effect))
 
         # ConditionCov: stop if the condition number of the covariance matrix becomes too large
         max_D = tf.reduce_max(self._diag_D)
@@ -276,8 +289,8 @@ class CMA(object):
         # TolXUp: stop if σ × max(D) increased by more than 10^4.
         # This usually indicates a far too small initial σ, or divergent behavior.
         prev_max_D = tf.reduce_max(tf.linalg.diag_part(self._prev_D))
-        tol_x_up_diff = self.σ * max_D - self._prev_sigma * prev_max_D
-        tol_x_up = tf.greater(tf.abs(tol_x_up_diff), 1e4)
+        tol_x_up_diff = tf.abs(self.σ * max_D - self._prev_sigma * prev_max_D)
+        tol_x_up = tf.greater(tol_x_up_diff, 1e4)
 
         do_terminate = no_effect_axis or no_effect_coord or condition_cov or tol_x_up
 
