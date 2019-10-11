@@ -3,6 +3,14 @@ Covariance Matrix Adaptation Evolution Strategy (CMA-ES)
 
 A Tensorflow v2 implementation.
 
+## What is CMA-ES
+
+Quoting [The CMA Evolution Strategy][1] page:
+
+> The CMA-ES (Covariance Matrix Adaptation Evolution Strategy) is an evolutionary algorithm for difficult non-linear non-convex black-box optimisation problems in continuous domain. The CMA-ES is considered as state-of-the-art in evolutionary computation and has been adopted as one of the standard tools for continuous optimisation in many (probably hundreds of) research labs and industrial environments around the world. 
+> 
+>The CMA-ES is typically applied to unconstrained or bounded constraint optimization problems, and search space dimensions between three and a hundred.
+
 ## Example
 
 ### 1. Define the fitness function
@@ -77,5 +85,10 @@ The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more
 
 ## Resources
 
-- The CMA Evolution Strategy - http://cma.gforge.inria.fr/
-- The CMA Evolution Strategy: A Tutorial - https://arxiv.org/abs/1604.00772
+- [CMA-ES at wikipedia][3]
+- [The CMA Evolution Strategy][1]
+- [The CMA Evolution Strategy: A Tutorial][2]
+
+[1]: http://cma.gforge.inria.fr/
+[2]: https://arxiv.org/abs/1604.00772
+[3]: https://en.wikipedia.org/wiki/CMA-ES
