@@ -11,6 +11,14 @@ Quoting [The CMA Evolution Strategy][1] page:
 > 
 >The CMA-ES is typically applied to unconstrained or bounded constraint optimization problems, and search space dimensions between three and a hundred.
 
+## Installation
+
+The package is [available on pypi](https://pypi.org/project/cma-es/) and can be installed with pip:
+
+```sh
+pip install cma-es
+```
+
 ## Example Usage
 
 ### 1. Define the fitness function
@@ -40,7 +48,7 @@ def fitness_fn(x):
     )
 ```
 
-![Six-Hump Camel Function](six_hump_camel_fn.png?raw=true)
+![Figure1: Six-Hump Camel Function](six_hump_camel_fn.png?raw=true)
 
 ### 2. Configure CMA-ES
 
@@ -76,7 +84,7 @@ best_fitness = cma.best_fitness()
 
 The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more details, including ways to plot the evolution path of the optimization such as in the figure below.
 
-![Optimization path](cma_trace.png?raw=true)
+![Figure 2: Optimization path](cma_trace.png?raw=true)
 
 ## More examples
 
