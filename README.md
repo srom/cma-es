@@ -85,7 +85,7 @@ The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more
 
 ## Resources
 
-- [CMA-ES at wikipedia][3]
+- [CMA-ES at Wikipedia][3]
 - [The CMA Evolution Strategy][1]
 - [The CMA Evolution Strategy: A Tutorial][2]
 
