@@ -32,6 +32,8 @@ def fitness_fn(x):
     )
 ```
 
+![Six-Hump Camel Function](six_hump_camel_fn.png?raw=true)
+
 ### 2. Configure CMA-ES
 
 The initial solution and initial step size (i.e. initial standard deviation of the search normal distribution) are problem specific.
@@ -46,9 +48,7 @@ cma = CMA(
 
 ### 3. Run the search
 
-The search method runs until the maximum number of generation is reached or until one of the early termination criteria is met.
-
-The default maximum number of generations is 500.
+The search method runs until the maximum number of generation is reached or until one of the early termination criteria is met. By default, the maximum number of generations is 500.
 
 ```python
 cma.search();
@@ -57,10 +57,14 @@ cma.search();
 Retrieve the best solution and its fitness value:
 
 ```python
-num_generation = cma.generation
+num_generations = cma.generation
 best_solution = cma.best_solution()
 best_fitness = cma.best_fitness()
 ```
+
+The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` contains more details about this example, including ways to plot the evolution path of the algorithm such as in the figure below.
+
+![Six-Hump Camel Function](cma_trace.png?raw=true)
 
 ## More examples
 
