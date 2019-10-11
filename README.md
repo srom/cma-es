@@ -13,7 +13,7 @@ Quoting [The CMA Evolution Strategy][1] page:
 
 ## Installation
 
-The package is [available on pypi](https://pypi.org/project/cma-es/) and can be installed with pip:
+The package is [available on PyPI](https://pypi.org/project/cma-es/) and can be installed with pip:
 
 ```sh
 pip install cma-es
