@@ -50,10 +50,6 @@ def fitness_fn(x):
 
 ### 2. Configure CMA-ES
 
-The initial solution and initial step size (i.e. initial standard deviation of the search distribution) are problem specific.
-
-The population size is automatically set by default, but it can be overidden by setting the parameter `population_size`.
-
 ```python
 from cma import CMA
 
@@ -63,6 +59,12 @@ cma = CMA(
     fitness_function=fitness_fn,
 )
 ```
+
+The initial solution and initial step size (i.e. initial standard deviation of the search distribution) are problem specific.
+
+The population size is automatically set by default, but it can be overidden by specifying the parameter `population_size`.
+
+For bounded constraint optimization problems, the parameter `enforce_bounds` can be set, e.g. `enforce_bounds=[[-2, 2], [-1, 1]]` for a 2D function.
 
 ### 3. Run the optimizer
 
