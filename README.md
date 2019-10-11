@@ -82,13 +82,15 @@ best_solution = cma.best_solution()
 best_fitness = cma.best_fitness()
 ```
 
-The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more details, including ways to plot the optimization path such as in the figure below.
+The notebook [`Example 1 - Six Hump Camel Function`][4] goes into more details, including ways to plot the optimization path such as in the figure below.
 
 ![Figure 2: Optimization path](cma_trace.png?raw=true)
 
 ## More examples
 
-- Jupyter notebooks with examples are available in the `notebook/` folder.
+- Jupyter notebooks with examples are available:
+  - [Example 1 - Six-Hump Camel Function][4]
+  - [Example 2 - Schwefel Function][5]
 - Unit tests also provide a few more examples: `cma/core_test.py`
 
 ## Resources
@@ -100,3 +102,5 @@ The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more
 [1]: http://cma.gforge.inria.fr/
 [2]: https://arxiv.org/abs/1604.00772
 [3]: https://en.wikipedia.org/wiki/CMA-ES
+[4]: https://nbviewer.jupyter.org/github/srom/cma-es/blob/master/notebook/Example%201%20-%20Six%20Hump%20Camel%20Function.ipynb
+[5]: https://nbviewer.jupyter.org/github/srom/cma-es/blob/master/notebook/Example%202%20-%20Schwefel%20Function.ipynb
