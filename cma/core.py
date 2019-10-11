@@ -22,7 +22,7 @@ class CMA(object):
         fitness_function,
         population_size=None,
         enforce_bounds=None,
-        termination_no_effect=1e-12,
+        termination_no_effect=1e-8,
         store_trace=False,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
@@ -126,11 +126,11 @@ class CMA(object):
         self._initialized = True
         return self
 
-    def search(self, max_num_epochs=500):
+    def search(self, max_generations=500):
         if not self._initialized:
             self.init()
 
-        for epoch in range(max_num_epochs):
+        for _ in range(max_generations):
             self.generation += 1
 
             # -----------------------------------------------------

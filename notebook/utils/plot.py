@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
+from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy.stats import chi2
@@ -122,9 +123,9 @@ def plot_2d_contour(
     mu = int(np.floor(len(solutions) / 2))
     for i, solution in enumerate(solutions):
         if i == 0:
-            label = f'population (top {mu})'
+            label = 'population (selected)'
         elif i == mu:
-            label = f'population (bottom {mu})'
+            label = 'population (discarded)'
         else:
             label = None
 
@@ -198,13 +199,19 @@ def draw_confidence_ellipse(
     ax.add_patch(ellipse);
 
 
-def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim):
-    num_rows = int(np.ceil(len(generations) / 2))
-    f, axes = plt.subplots(num_rows, 2, figsize=(18, 8 * num_rows));
+def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim, num_columns=3):
+    num_rows = int(np.ceil(len(generations) / num_columns))
+    f, axes = plt.subplots(
+        num_rows,
+        num_columns,
+        sharex=True,
+        sharey=True,
+        figsize=(16, 5 * num_rows),
+    )
     axes = axes.flatten()
     for i, ax in enumerate(axes):
         if i >= len(generations):
-            ax.remove();
+            ax.remove()
             break
 
         generation = generations[i]
@@ -233,24 +240,32 @@ def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim):
             confidence=0.95,
         )
 
-        ax.set_title(f'Generation {generation}');
+        if i > 0:
+            ax.get_legend().remove()
+
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        ax.get_xaxis().set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.get_yaxis().set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.set_title(f'Generation {generation}')
 
     return f, axes
 
 
-def plot_mean_coordinates(means):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+def plot_mean_coordinates(trace, figsize=(15, 6)):
+    fig, axes = plt.subplots(1, 2, figsize=figsize)
     axes = axes.flatten()
 
+    means = np.vstack([t['m'] for t in trace])
     generations = range(len(means))
 
     for i, ax in enumerate(axes):
         ax.plot(generations, means[:,i])
         ax.set_xlabel('Generation')
-        ax.set_title(f'$x_{i+1}$')
+        ax.set_title(f'$X_{i+1}$')
         ax.grid(True)
 
-    fig.suptitle('Evolution of the mean\n', fontsize='xx-large');
+    fig.suptitle('Evolution of the mean\n', fontsize='x-large');
 
     return fig, axes
 
