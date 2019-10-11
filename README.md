@@ -82,7 +82,7 @@ best_solution = cma.best_solution()
 best_fitness = cma.best_fitness()
 ```
 
-The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more details, including ways to plot the evolution path of the optimization such as in the figure below.
+The notebook `notebook/Example 1 - Six Hump Camel Function.ipynb` goes into more details, including ways to plot the optimization path such as in the figure below.
 
 ![Figure 2: Optimization path](cma_trace.png?raw=true)
 
