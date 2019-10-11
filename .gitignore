@@ -55,6 +55,7 @@ Thumbs.db
 *.pyc
 env/
 dist/
+cma_es.egg-info/
 
 # Misc #
 ########
