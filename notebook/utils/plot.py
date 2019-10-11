@@ -16,9 +16,10 @@ def plot_3d_surface(
     show_axes=True,
     fig=None,
     ax=None,
+    figsize=(15, 8),
 ):
     if ax is None:
-        fig = plt.figure(figsize=(15, 8))
+        fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(111, projection='3d')
 
     a = np.linspace(*xlim, 100)
@@ -85,9 +86,12 @@ def plot_2d_contour(
     show_color_scale=True,
     fig=None,
     ax=None,
+    figsize=(15, 8),
 ):
+    if fig is None:
+        fig = plt.figure(figsize=figsize)
+
     if ax is None:
-        fig = plt.figure(figsize=(15, 8))
         ax = fig.add_subplot(111)
 
     a = np.linspace(*xlim, 100)
@@ -192,6 +196,63 @@ def draw_confidence_ellipse(
         **kwargs,
     )
     ax.add_patch(ellipse);
+
+
+def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim):
+    num_rows = int(np.ceil(len(generations) / 2))
+    f, axes = plt.subplots(num_rows, 2, figsize=(18, 8 * num_rows));
+    axes = axes.flatten()
+    for i, ax in enumerate(axes):
+        if i >= len(generations):
+            ax.remove();
+            break
+
+        generation = generations[i]
+        trace = cma_trace[generation]
+        m = trace['m']
+        B = trace['B']
+        l = trace['σ']**2 * np.diagonal(trace['D'])**2
+        population = trace['population']
+
+        plot_2d_contour(
+            fitness_fn,
+            xlim=xlim,
+            ylim=ylim,
+            mean=m,
+            solutions=population,
+            show_color_scale=False,
+            fig=f,
+            ax=ax,
+        );
+
+        draw_confidence_ellipse(
+            ax,
+            mean=m,
+            eigenvectors=B,
+            eigenvalues=l,
+            confidence=0.95,
+        )
+
+        ax.set_title(f'Generation {generation}');
+
+    return f, axes
+
+
+def plot_mean_coordinates(means):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    axes = axes.flatten()
+
+    generations = range(len(means))
+
+    for i, ax in enumerate(axes):
+        ax.plot(generations, means[:,i])
+        ax.set_xlabel('Generation')
+        ax.set_title(f'$x_{i+1}$')
+        ax.grid(True)
+
+    fig.suptitle('Evolution of the mean\n', fontsize='xx-large');
+
+    return fig, axes
 
 
 def angle_rad(u, v):

@@ -260,6 +260,9 @@ class CMA(object):
     def best_solution(self):
         return self.m.read_value().numpy()
 
+    def best_fitness(self):
+        return self.fitness_fn(np.array([self.best_solution()]))[0]
+
     def termination_criterion_met(self, return_details=False):
         # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis
         # direction of C does not change m
