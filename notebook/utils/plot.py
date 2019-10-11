@@ -252,14 +252,19 @@ def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim, num_columns
     return f, axes
 
 
-def plot_mean_coordinates(trace, figsize=(15, 6)):
-    fig, axes = plt.subplots(1, 2, figsize=figsize)
-    axes = axes.flatten()
-
+def plot_mean_coordinates(trace, num_columns=2, figsize=(15, 6)):
     means = np.vstack([t['m'] for t in trace])
     generations = range(len(means))
 
+    num_rows = int(np.ceil(means.shape[1] / num_columns))
+    fig, axes = plt.subplots(num_rows, num_columns, figsize=figsize)
+    axes = axes.flatten()
+
     for i, ax in enumerate(axes):
+        if i >= means.shape[1]:
+            ax.remove()
+            break
+
         ax.plot(generations, means[:,i])
         ax.set_xlabel('Generation')
         ax.set_title(f'$X_{i+1}$')
