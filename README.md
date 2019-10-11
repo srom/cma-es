@@ -11,7 +11,7 @@ Quoting [The CMA Evolution Strategy][1] page:
 > 
 >The CMA-ES is typically applied to unconstrained or bounded constraint optimization problems, and search space dimensions between three and a hundred.
 
-## Example
+## Example Usage
 
 ### 1. Define the fitness function
 
