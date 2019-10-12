@@ -214,7 +214,7 @@ def plot_generations(generations, cma_trace, fitness_fn, xlim, ylim, num_columns
     for i, ax in enumerate(axes):
         if i >= len(generations):
             ax.remove()
-            break
+            continue
 
         generation = generations[i]
         trace = cma_trace[generation]
@@ -259,13 +259,15 @@ def plot_mean_coordinates(trace, num_columns=2, figsize=(15, 6)):
     generations = range(len(means))
 
     num_rows = int(np.ceil(means.shape[1] / num_columns))
-    fig, axes = plt.subplots(num_rows, num_columns, figsize=figsize)
+    _fig_size = (figsize[0], figsize[1] * num_rows)
+
+    fig, axes = plt.subplots(num_rows, num_columns, figsize=_fig_size)
     axes = axes.flatten()
 
     for i, ax in enumerate(axes):
         if i >= means.shape[1]:
             ax.remove()
-            break
+            continue
 
         ax.plot(generations, means[:,i])
         ax.set_xlabel('Generation')
@@ -281,13 +283,16 @@ def angle_rad(u, v):
     """
     Counter-clockwise angle in radian between vectors u and v.
     """
-    a, b = u / np.linalg.norm(u, 2), v / np.linalg.norm(v, 2)
-    return np.arctan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1])
+    a = u / np.linalg.norm(u, 2)
+    b = v / np.linalg.norm(v, 2)
+    return np.arctan2(
+        a[0] * b[1] - a[1] * b[0],
+        a[0] * b[0] + a[1] * b[1],
+    )
 
 
 def angle_deg(u, v):
     """
     Counter-clockwise angle in degrees between vectors u and v.
     """
-    angle = angle_rad(u, v) * (180 / np.pi)
-    return angle
+    return angle_rad(u, v) * (180 / np.pi)
