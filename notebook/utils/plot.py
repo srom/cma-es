@@ -169,9 +169,11 @@ def draw_confidence_ellipse(
     **kwargs,
 ):
     """
-    Draw confidence ellipse representing the covariance matrix. See [1] for a walkthrough.
+    Draw a covariance error ellipse, i.e. an iso-contour of the multivariate normal distribution.
 
-    [1] https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
+    A 95% confidence ellipse (default) shows where 95% of sampled points will fall.
+
+    Ref: https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
     """
     if not np.isscalar(confidence) or 0 > confidence > 1:
         raise ValueError('Confidence must be a number between 0 and 1')
