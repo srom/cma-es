@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class CMA(object):
     """
-    Covariance Matrix Adaptation Evolution Strategy (CMA-ES) implementation in TensorFlow v2.
+    Covariance Matrix Adaptation Evolution Strategy (CMA-ES) implemented with TensorFlow v2.
 
     This implementation is essentially following "The CMA Evolution Strategy: A Tutorial" [1]
 
