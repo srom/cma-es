@@ -21,6 +21,11 @@ class CMA(object):
         initial_step_size,
         fitness_function,
         population_size=None,
+        cc=None,
+        cσ=None,
+        c1=None,
+        cμ=None,
+        damps=None,
         enforce_bounds=None,
         termination_no_effect=1e-8,
         store_trace=False,
@@ -49,6 +54,11 @@ class CMA(object):
         self.fitness_fn = fitness_function
         self.population_size = population_size
         self.enforce_bounds = enforce_bounds
+        self._cc = cc
+        self._cσ = cσ
+        self._c1 = c1
+        self._cμ = cμ
+        self._damps = damps
         self.termination_no_effect = termination_no_effect
         self.store_trace = store_trace
 
@@ -86,15 +96,32 @@ class CMA(object):
         # Variance-effective size of mu
         self.μeff = tf.reduce_sum(self.weights) ** 2 / tf.reduce_sum(self.weights ** 2)
         # Time constant for cumulation for C
-        self.cc = (4 + self.μeff / self.N) / (self.N + 4 + 2 * self.μeff / self.N)
+        if self._cc is not None:
+            self.cc = tf.constant(self._cc, dtype=tf.float64)
+        else:
+            self.cc = (4 + self.μeff / self.N) / (self.N + 4 + 2 * self.μeff / self.N)
         # Time constant for cumulation for sigma control
-        self.cσ = (self.μeff + 2) / (self.N + self.μeff + 5)
+        if self._cσ is not None:
+            self.cσ = tf.constant(self._cσ, dtype=tf.float64)
+        else:
+            self.cσ = (self.μeff + 2) / (self.N + self.μeff + 5)
         # Learning rate for rank-one update of C
-        self.c1 = 2 / ((self.N + 1.3)**2 + self.μeff)
+        if self._c1 is not None:
+            self.c1 = tf.constant(self._c1, dtype=tf.float64)
+        else:
+            self.c1 = 2 / ((self.N + 1.3)**2 + self.μeff)
         # Learning rate for rank-μ update of C
-        self.cμ = 2 * (self.μeff - 2 + 1 / self.μeff) / ((self.N + 2)**2 + 2 * self.μeff / 2)
+        if self._cμ is not None:
+            self.cμ = tf.constant(self._cμ, dtype=tf.float64)
+        else:
+            self.cμ = 2 * (self.μeff - 2 + 1 / self.μeff) / ((self.N + 2)**2 + 2 * self.μeff / 2)
         # Damping for sigma
-        self.damps = 1 + 2 * tf.maximum(0, tf.sqrt((self.μeff - 1) / (self.N + 1)) - 1) + self.cσ
+        if self._damps is not None:
+            self.damps = tf.constant(self._damps, dtype=tf.float64)
+        else:
+            self.damps = (
+                1 + 2 * tf.maximum(0, tf.sqrt((self.μeff - 1) / (self.N + 1)) - 1) + self.cσ
+            )
         # Expectation of ||N(0,I)||
         self.chiN = tf.sqrt(self.N) * (1 - 1 / (4 * self.N) + 1 / (21 * self.N**2))
 
