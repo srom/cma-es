@@ -33,9 +33,8 @@ class TestCMA(unittest.TestCase):
             initial_step_size=0.5,
             fitness_function=fitness_fn
         )
-        cma.search(num_max_epochs)
 
-        x1, x2 = cma.best_solution()
+        (x1, x2), best_fitness = cma.search(num_max_epochs)
 
         # Assert global minimum has been reached
         cond = (
@@ -49,6 +48,8 @@ class TestCMA(unittest.TestCase):
             )
         )
         self.assertTrue(cond)
+
+        self.assertTrue(np.isclose(best_fitness, -1.0316, rtol=1e-3))
 
         # Early stopping occured
         self.assertTrue(cma.generation < num_max_epochs)

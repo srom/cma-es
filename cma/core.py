@@ -255,13 +255,13 @@ class CMA(object):
             if self.termination_criterion_met():
                 break
 
-        return self
+        return self.best_solution(), self.best_fitness()
 
     def best_solution(self):
         return self.m.read_value().numpy()
 
     def best_fitness(self):
-        return self.fitness_fn(np.array([self.best_solution()]))[0]
+        return self.fitness_fn(tf.stack([self.m])).numpy()[0]
 
     def termination_criterion_met(self, return_details=False):
         # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis

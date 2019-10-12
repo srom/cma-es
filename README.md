@@ -71,15 +71,7 @@ For bounded constraint optimization problems, the parameter `enforce_bounds` can
 The search method runs until the maximum number of generation is reached or until one of the early termination criteria is met. By default, the maximum number of generations is 500.
 
 ```python
-cma.search()
-```
-
-Retrieve the best solution and its fitness value:
-
-```python
-num_generations = cma.generation
-best_solution = cma.best_solution()
-best_fitness = cma.best_fitness()
+best_solution, best_fitness = cma.search()
 ```
 
 The notebook [`Example 1 - Six Hump Camel Function`][4] goes into more details, including ways to plot the optimization path such as in the figure below.
