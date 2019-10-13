@@ -11,8 +11,23 @@ class TestCMA(unittest.TestCase):
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)
 
-        tf.keras.backend.clear_session()
         tf.random.set_seed(444)
+
+    def test_one_dimension(self):
+
+        def fitness_fn(x):
+            return x[:,0]**2
+
+        cma = CMA(
+            initial_solution=[3.0],
+            initial_step_size=1.0,
+            fitness_function=fitness_fn,
+        )
+
+        (x1,), best_fitness = cma.search()
+
+        self.assertTrue(np.isclose(x1, 0., rtol=1e-3, atol=1e-3))
+        self.assertTrue(np.isclose(best_fitness, 0., rtol=1e-3))
 
     def test_six_hump_camel_fn(self):
         num_max_epochs = 100
