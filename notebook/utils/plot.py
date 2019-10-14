@@ -175,7 +175,7 @@ def draw_confidence_ellipse(
 
     Ref: https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
     """
-    if not np.isscalar(confidence) or 0 > confidence > 1:
+    if not np.isscalar(confidence) or confidence <= 0 or confidence >= 1:
         raise ValueError('Confidence must be a number between 0 and 1')
 
     chi2_val = chi2.isf(q=1. - confidence, df=2)

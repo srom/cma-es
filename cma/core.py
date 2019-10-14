@@ -20,13 +20,13 @@ class CMA(object):
         initial_solution,
         initial_step_size,
         fitness_function,
+        enforce_bounds=None,
         population_size=None,
         cc=None,
         cσ=None,
         c1=None,
         cμ=None,
         damps=None,
-        enforce_bounds=None,
         termination_no_effect=1e-8,
         store_trace=False,
     ):
@@ -49,7 +49,6 @@ class CMA(object):
 
         self.generation = 0
         self.initial_solution = initial_solution
-        self.dimension = len(initial_solution)
         self.initial_step_size = initial_step_size
         self.fitness_fn = fitness_function
         self.population_size = population_size
@@ -62,15 +61,16 @@ class CMA(object):
         self.termination_no_effect = termination_no_effect
         self.store_trace = store_trace
 
-        if self.store_trace:
-            self.trace = []
-
         self._initialized = False
-        self._enforce_bounds = self.enforce_bounds is not None
 
     def init(self):
         if self._initialized:
             raise ValueError('Already initialized - call reset method to start over')
+
+        self.generation = 0
+        self.dimension = len(self.initial_solution)
+        self._enforce_bounds = self.enforce_bounds is not None
+        self.trace = []
 
         # -------------------------
         # Non-trainable parameters
@@ -149,7 +149,6 @@ class CMA(object):
         # Scaling (square root of eigenvalues)
         self.D = tf.Variable(tf.eye(num_rows=self.N, dtype=tf.float64))
 
-        self.generation = 0
         self._initialized = True
         return self
 
@@ -213,10 +212,7 @@ class CMA(object):
                 fn=lambda e: e * tf.transpose(e),
                 elems=(x_diff / self.σ)[:, tf.newaxis],
             )
-            y_s = tf.reduce_sum(
-                tf.multiply(C_m, self.weights[:, tf.newaxis]),
-                axis=0,
-            )
+            y_s = tf.reduce_sum(tf.multiply(C_m, self.weights[:, tf.newaxis]), axis=0)
 
             # Combine Rank-one-Update and Rank-μ-Update
             C = (
