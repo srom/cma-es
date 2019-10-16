@@ -97,7 +97,7 @@ class TestCMA(unittest.TestCase):
             initial_step_size=1.,
             fitness_function=fitness_fn,
             # test callback function:
-            callback_fn=callback_fn,
+            callback_function=callback_fn,
         )
         cma.search(num_max_epochs)
 
