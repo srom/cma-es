@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
-from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter, LogLocator
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy.stats import chi2
@@ -89,6 +89,7 @@ def plot_2d_contour(
     fig=None,
     ax=None,
     figsize=(15, 8),
+    log_scale=False,
 ):
     if fig is None:
         fig = plt.figure(figsize=figsize)
@@ -141,7 +142,11 @@ def plot_2d_contour(
             label=label
         )
 
-    cs = ax.contourf(A, B, Z, levels=levels, cmap='cool')
+    locator = None
+    if log_scale is True:
+        locator = LogLocator()
+
+    cs = ax.contourf(A, B, Z, levels=levels, cmap='cool', locator=locator)
 
     if fig is not None and show_color_scale:
         fig.colorbar(cs, ax=ax)
