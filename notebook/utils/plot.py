@@ -4,6 +4,7 @@ from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy.stats import chi2
+import tensorflow as tf
 
 
 def plot_3d_surface(
@@ -25,10 +26,10 @@ def plot_3d_surface(
 
     a = np.linspace(*xlim, 100)
     b = np.linspace(*ylim, 100)
-    y = lambda x1, x2: fitness_fn(np.array([[x1, x2]]))[0]
 
     A, B = np.meshgrid(a, b)
-    zs = np.array([y(u, v) for u, v in zip(np.ravel(A), np.ravel(B))])
+    grid_values = tf.convert_to_tensor([[u, v] for u, v in zip(np.ravel(A), np.ravel(B))])
+    zs = fitness_fn(grid_values).numpy()
     Z = zs.reshape(A.shape)
 
     ax.set_xlabel('X axis')
@@ -38,7 +39,7 @@ def plot_3d_surface(
         ax.scatter3D(
             [mean[0]],
             [mean[1]],
-            [y(mean[0], mean[1])],
+            [fitness_fn(tf.convert_to_tensor([mean])).numpy()[0]],
             depthshade=False,
             marker='+',
             color='red',
@@ -52,7 +53,7 @@ def plot_3d_surface(
         ax.scatter3D(
             [solution[0]],
             [solution[1]],
-            [y(solution[0], solution[1])],
+            [fitness_fn(tf.convert_to_tensor([solution])).numpy()[0]],
             depthshade=False,
             marker='o',
             color='red' if (i+1) <= len(solutions) / 2 else 'grey',
@@ -97,10 +98,10 @@ def plot_2d_contour(
 
     a = np.linspace(*xlim, 100)
     b = np.linspace(*ylim, 100)
-    y = lambda x1, x2: fitness_fn(np.array([[x1, x2]]))[0]
 
     A, B = np.meshgrid(a, b)
-    zs = np.array([y(u, v) for u, v in zip(np.ravel(A), np.ravel(B))])
+    grid_values = tf.convert_to_tensor([[u, v] for u, v in zip(np.ravel(A), np.ravel(B))])
+    zs = fitness_fn(grid_values).numpy()
     Z = zs.reshape(A.shape)
 
     ax.set_xlabel('X axis')
