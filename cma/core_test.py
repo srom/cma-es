@@ -88,10 +88,16 @@ class TestCMA(unittest.TestCase):
                 s * (1 - t) * tf.cos(x[:,0]) + s
             )
 
+        def callback_fn(cma, logger):
+            if cma.generation == 10:
+                cma.some_parameter = 'hi'
+
         cma = CMA(
             initial_solution=[-2., 7.],
             initial_step_size=1.,
-            fitness_function=fitness_fn
+            fitness_function=fitness_fn,
+            # test callback function:
+            callback_fn=callback_fn,
         )
         cma.search(num_max_epochs)
 
@@ -116,6 +122,9 @@ class TestCMA(unittest.TestCase):
 
         # Early stopping occured
         self.assertTrue(cma.generation < num_max_epochs)
+
+        # Assert callback function was called
+        self.assertEqual('hi', cma.some_parameter)
 
     def test_schwefel_fn(self):
         num_max_epochs = 100

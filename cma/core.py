@@ -29,6 +29,7 @@ class CMA(object):
         damps=None,
         termination_no_effect=1e-8,
         store_trace=False,
+        callback_fn=None,
     ):
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
@@ -46,6 +47,8 @@ class CMA(object):
         elif enforce_bounds is not None and np.ndim(enforce_bounds) != 2:
             ndim = np.ndim(enforce_bounds)
             raise ValueError(f'Bounds must be a 2D array but got an array of dim {ndim}')
+        elif callback_fn is not None and not callable(callback_fn):
+            raise ValueError(f'Callback function must be callable')
 
         self.generation = 0
         self.initial_solution = initial_solution
@@ -60,6 +63,7 @@ class CMA(object):
         self._damps = damps
         self.termination_no_effect = termination_no_effect
         self.store_trace = store_trace
+        self.callback_fn = callback_fn
 
         self._initialized = False
 
@@ -271,6 +275,10 @@ class CMA(object):
             self.B.assign(B)
             self.D.assign(D)
             self.m.assign(m)
+
+            # Call user defined callback function
+            if self.callback_fn is not None:
+                self.callback_fn(self, logger)
 
             # ---------------------------------
             # (7) Terminate early if necessary
