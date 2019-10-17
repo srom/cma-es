@@ -20,20 +20,18 @@ def main():
     summary_writer = tf.summary.create_file_writer(log_dir)
 
     def logging_function(cma, logger):
-        best_fitness = fitness_fn(tf.stack([cma.m]))[0]
+        fitness = cma.best_fitness()
 
         # Write best fitness to the tensorboard summary log
         with summary_writer.as_default():
-            tf.summary.scalar('fitness', best_fitness, step=cma.generation)
+            tf.summary.scalar('fitness', fitness, step=cma.generation)
 
         # Periodically log progress
         if cma.generation % 10 == 0:
-            fitness = best_fitness.numpy()
             logger.info(f'Generation {cma.generation} - fitness {fitness}')
 
         if cma.termination_criterion_met or cma.generation == max_epochs:
             sol = cma.best_solution()
-            fitness = best_fitness.numpy()
             logger.info(f'Final solution at gen {cma.generation}: {sol} (fitness: {fitness})')
 
     cma = CMA(
