@@ -80,7 +80,7 @@ The notebook [`Example 1 - Six Hump Camel Function`][4] goes into more details, 
 
 ## Logging
 
-A user-defined callabck function can be specified to inspect variables during the search.
+A user-defined callback function can be specified to inspect variables during the search.
 
 It is mainly intended for logging purpose, e.g:
 
