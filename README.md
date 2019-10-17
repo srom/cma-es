@@ -78,12 +78,52 @@ The notebook [`Example 1 - Six Hump Camel Function`][4] goes into more details, 
 
 ![Figure 2: Optimization path](cma_trace.png?raw=true)
 
+## Logging
+
+A user-defined callabck function can be specified to inspect variables during the search.
+
+It is mainly intended for logging purpose, e.g:
+
+```python
+max_epochs = 500
+
+def logging_function(cma, logger):
+    if cma.generation % 10 == 0:
+        fitness = cma.best_fitness()
+        logger.info(f'Generation {cma.generation} - fitness {fitness}')
+
+    if cma.termination_criterion_met or cma.generation == max_epochs:
+        sol = cma.best_solution()
+        fitness = cma.best_fitness()
+        logger.info(f'Final solution at gen {cma.generation}: {sol} (fitness: {fitness})')
+
+cma = CMA(
+    initial_solution=[1.5, -0.4],
+    initial_step_size=1.0,
+    fitness_function=fitness_fn,
+    callback_function=logging_function,
+)
+cma.search(max_epochs)
+```
+
+Check out an example logging progress to TensorBoard: [tensorboard_example.py][6]
+
+## Run on a GPU
+
+By virtue of being written using TensorFlow, it is trivial to run CMA on a GPU:
+
+```python
+with tf.device('/GPU:0'):
+    cma.search()
+```
+
 ## More examples
 
 - Jupyter notebooks with examples are available:
   - [Example 1 - Six-Hump Camel Function][4]
   - [Example 2 - Schwefel Function][5]
-- Unit tests also provide a few more examples: `cma/core_test.py`
+  - [Example 3 - Logging to TensorBoard][6]
+- Unit tests provide a few more examples: `cma/core_test.py`
 
 ## Resources
 
@@ -96,3 +136,4 @@ The notebook [`Example 1 - Six Hump Camel Function`][4] goes into more details, 
 [3]: https://en.wikipedia.org/wiki/CMA-ES
 [4]: https://nbviewer.jupyter.org/github/srom/cma-es/blob/master/notebook/Example%201%20-%20Six%20Hump%20Camel%20Function.ipynb
 [5]: https://nbviewer.jupyter.org/github/srom/cma-es/blob/master/notebook/Example%202%20-%20Schwefel%20Function.ipynb
+[6]: https://github.com/srom/cma-es/blob/master/notebook/tensorboard_example.py

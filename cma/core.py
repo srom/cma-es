@@ -117,6 +117,7 @@ class CMA(object):
         self.termination_no_effect = termination_no_effect
         self.store_trace = store_trace
         self.callback_fn = callback_function
+        self.termination_criterion_met = False
 
         self._initialized = False
 
