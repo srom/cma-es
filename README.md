@@ -21,7 +21,7 @@ pip install cma-es
 
 ### 1. Define the fitness function
 
-The CMA class expects fitness functions with the following signature:
+The CMA class expects a fitness function with the following signature:
 
 ```    
 Args:

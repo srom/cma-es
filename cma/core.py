@@ -31,6 +31,59 @@ class CMA(object):
         store_trace=False,
         callback_function=None,
     ):
+        """
+        Args:
+          initial_solution
+            Search starting point, a list or numpy array.
+
+          initial_step_size
+            Standard deviation of the covariance matrix at generation 0.
+
+          fitness_function
+            Function to be minimized. Function must have the following signature:
+            ```
+            Args:
+              x: tf.Tensor of shape (M, N)
+
+            Returns:
+              Fitness evaluations: tf.Tensor of shape (M,)
+            ```
+            Where `M` is the number of solutions to evaluate and `N` is the dimension
+            of a single solution.
+
+          enforce_bounds
+            2D list, the min and max for each dimension, e.g. [[-1, 1], [-2, 2], [0, 1]].
+            Ensures the fitness function is never called with out of bounds values.
+            Out of bounds samples are clipped back to the minimum or maximum values and a penalty
+            of `||x - x_clipped||` is added to the fitness evaluation.
+
+          population_size
+            Number of samples produced at each generation.
+            Defaults to 8 + 3 * ln(dimension) (e.g. 10 for 2 dimensions, 14 for 10 dimensions)
+
+          cc, cσ, c1, cμ, damps
+            Core parameters of the algorithm. Set to appropriate values by default.
+
+          termination_no_effect
+            Set the threshold for NoEffectAxis and NoEffectCoord termination criteria.
+            Decreasing this value can increase the number of significant decimals of the solution.
+            Defaults to 1e-8.
+
+          store_trace
+            If True, core variables are stored in memory (attribute self.trace) at each generation.
+            This is mostly a debugging mechanism and it should not be used in production.
+            Defaults to False.
+
+          callback_function
+            User defined function called first after initialization, then at the end of each
+            generation. Intended for logging purpose.
+            Function must have the following signature:
+            ```
+            Args:
+              cma: the parent CMA instance (i.e. self)
+              logger: a python Logger instance
+            ```
+        """
         if not isinstance(initial_solution, (np.ndarray, list)):
             raise ValueError('Initial solution must be a list or numpy array')
         elif np.ndim(initial_solution) != 1:
@@ -157,8 +210,21 @@ class CMA(object):
         return self
 
     def search(self, max_generations=500):
+        """
+        Args:
+          max_generations
+            Maximum number of generations to run for. The search can be interrupted before the
+            max is reached if one of the termination criteria is met.
+
+        Returns:
+          The best solution and its fitness score.
+        """
         if not self._initialized:
             self.init()
+
+        # Call user defined function at generation 0
+        if self.callback_fn is not None:
+            self.callback_fn(self, logger)
 
         for _ in range(max_generations):
             self.generation += 1
@@ -184,16 +250,7 @@ class CMA(object):
             x_sorted = tf.gather(x, tf.argsort(f_x))
 
             if self.store_trace:
-                self.trace.append({
-                    'm': self.m.read_value().numpy(),
-                    'σ': self.σ.read_value().numpy(),
-                    'C': self.C.read_value().numpy(),
-                    'p_σ': self.p_σ.read_value().numpy(),
-                    'p_C': self.p_C.read_value().numpy(),
-                    'B': self.B.read_value().numpy(),
-                    'D': self.D.read_value().numpy(),
-                    'population': x_sorted.numpy(),
-                })
+                self._store_trace()
 
             # The new mean is a weighted average of the top-μ solutions
             x_diff = (x_sorted - self.m)
@@ -276,14 +333,16 @@ class CMA(object):
             self.D.assign(D)
             self.m.assign(m)
 
-            # Call user defined callback function
-            if self.callback_fn is not None:
-                self.callback_fn(self, logger)
-
             # ---------------------------------
             # (7) Terminate early if necessary
             # ---------------------------------
-            if self.termination_criterion_met():
+            self.termination_criterion_met = self.should_terminate()
+
+            # Call user defined function last
+            if self.callback_fn is not None:
+                self.callback_fn(self, logger)
+
+            if self.termination_criterion_met:
                 break
 
         return self.best_solution(), self.best_fitness()
@@ -294,7 +353,7 @@ class CMA(object):
     def best_fitness(self):
         return self.fitness_fn(tf.stack([self.m])).numpy()[0]
 
-    def termination_criterion_met(self, return_details=False):
+    def should_terminate(self, return_details=False):
         # NoEffectAxis: stop if adding a 0.1-standard deviation vector in any principal axis
         # direction of C does not change m
         i = self.generation % self.dimension
@@ -337,3 +396,15 @@ class CMA(object):
     def reset(self):
         self._initialized = False
         return self.init()
+
+    def _store_trace(self):
+        self.trace.append({
+            'm': self.m.read_value().numpy(),
+            'σ': self.σ.read_value().numpy(),
+            'C': self.C.read_value().numpy(),
+            'p_σ': self.p_σ.read_value().numpy(),
+            'p_C': self.p_C.read_value().numpy(),
+            'B': self.B.read_value().numpy(),
+            'D': self.D.read_value().numpy(),
+            'population': x_sorted.numpy(),
+        })
