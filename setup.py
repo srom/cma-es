@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='cma-es',
     packages=['cma'],
-    version='1.1.0',
+    version='1.2.0',
     license='MIT',
     author="Romain Strock",
     author_email="romain.strock@gmail.com",
