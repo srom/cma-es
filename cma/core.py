@@ -308,18 +308,6 @@ class CMA(object):
             # ----------------------------------------
             diag_D, B, _ = tf.linalg.svd(C)
             D = tf.linalg.tensor_diag(diag_D)
-            """
-            try:
-                eigenvalues, eigenvectors = tf.linalg.eigh(C)
-            except tf.errors.InvalidArgumentError as e:
-                logger.error(e)
-                logger.error('Eigen decomposition was not successful - aborting')
-                break
-
-            diag_D = tf.sqrt(eigenvalues)
-            D = tf.linalg.tensor_diag(diag_D)
-            B = eigenvectors
-            """
 
             # -------------------------------
             # (6) Assign new variable values
