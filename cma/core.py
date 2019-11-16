@@ -248,13 +248,13 @@ class CMA(object):
             # -------------------------------------------------
             # Evaluate and sort solutions
             f_x = self.fitness_fn(x) + penalty
-            x_sorted = tf.gather(x, tf.argsort(f_x))
+            self.x_sorted = tf.gather(x, tf.argsort(f_x))
 
             if self.store_trace:
                 self._store_trace()
 
             # The new mean is a weighted average of the top-μ solutions
-            x_diff = (x_sorted - self.m)
+            x_diff = (self.x_sorted - self.m)
             x_mean = tf.reduce_sum(tf.multiply(x_diff, self.weights), axis=0)
             m = self.m + x_mean
 
@@ -306,7 +306,9 @@ class CMA(object):
             # ----------------------------------------
             # (5) Update B and D: eigen decomposition
             # ----------------------------------------
-            diag_D, B, _ = tf.linalg.svd(C)
+            u, B, _ = tf.linalg.svd(C)
+
+            diag_D = tf.sqrt(u)
             D = tf.linalg.tensor_diag(diag_D)
 
             # -------------------------------
@@ -399,5 +401,5 @@ class CMA(object):
             'p_C': self.p_C.read_value().numpy(),
             'B': self.B.read_value().numpy(),
             'D': self.D.read_value().numpy(),
-            'population': x_sorted.numpy(),
+            'population': self.x_sorted.numpy(),
         })

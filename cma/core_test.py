@@ -70,7 +70,7 @@ class TestCMA(unittest.TestCase):
         self.assertTrue(cma.generation < num_max_epochs)
 
     def test_branin_fn(self):
-        num_max_epochs = 100
+        num_max_epochs = 150
 
         def fitness_fn(x):
             """
