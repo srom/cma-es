@@ -98,6 +98,7 @@ class TestCMA(unittest.TestCase):
             fitness_function=fitness_fn,
             # test callback function:
             callback_function=callback_fn,
+            dtype=tf.float64,
         )
         cma.search(num_max_epochs)
 
@@ -144,6 +145,7 @@ class TestCMA(unittest.TestCase):
             # Test setting the population and enforcing the bounds:
             population_size=20,
             enforce_bounds=[[-500, 500]] * 4,
+            dtype=tf.float64,
         )
         cma.search(num_max_epochs)
 

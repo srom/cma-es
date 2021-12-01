@@ -30,7 +30,7 @@ class CMA(object):
         termination_no_effect=1e-8,
         store_trace=False,
         callback_function=None,
-        dtype=tf.float64,
+        dtype=tf.float32,
     ):
         """
         Args:
