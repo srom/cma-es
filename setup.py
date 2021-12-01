@@ -2,7 +2,7 @@ import setuptools
 
 
 description = (
-    "Covariance Matrix Adaptation Evolution Strategy (CMA-ES) implemented with TensorFlow v2"
+    "Covariance Matrix Adaptation Evolution Strategy (CMA-ES) implemented with TensorFlow"
 )
 
 with open("README.md", "r") as fh:
@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='cma-es',
     packages=['cma'],
-    version='1.4.0',
+    version='1.5.0',
     license='MIT',
     author="Romain Strock",
     author_email="romain.strock@gmail.com",
@@ -23,8 +23,7 @@ setuptools.setup(
     keywords=['optimization', 'numerical-optimization', 'tensorflow'],
     python_requires='>=3.6',
     install_requires=[
-        'numpy',
-        'tensorflow>=2.0',
+        'tensorflow',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -41,5 +40,8 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 )
