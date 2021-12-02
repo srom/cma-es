@@ -17,6 +17,12 @@ The package is [available on PyPI](https://pypi.org/project/cma-es/) and can be 
 pip install cma-es
 ```
 
+Alternatively, `cma-es` can also be installed from [conda-forge](https://anaconda.org/conda-forge/cma-es):
+
+```sh
+conda install -c conda-forge cma-es
+```
+
 ## Example Usage
 
 ### 1. Define the fitness function
