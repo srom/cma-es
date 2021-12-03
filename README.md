@@ -120,7 +120,7 @@ Check out an example logging progress to TensorBoard: [tensorboard_example.py][6
 
 By virtue of using TensorFlow, CMA should run on available GPUs without any code change. 
 
-If you run into issues, check the official TF documentation: [Use a GPU](https://www.tensorflow.org/guide/gpu).
+If you run into issues, check the official [TF documentation](https://www.tensorflow.org/guide/gpu).
 
 ## More examples
 
