@@ -1,7 +1,7 @@
 Covariance Matrix Adaptation Evolution Strategy (CMA-ES)
 --------------------------------------------------------
 
-A Tensorflow 2 implementation.
+A TensorFlow 2 implementation.
 
 ## What is CMA-ES?
 
@@ -116,14 +116,11 @@ cma.search(max_epochs)
 
 Check out an example logging progress to TensorBoard: [tensorboard_example.py][6]
 
-## Run on a GPU
+## Running on GPU
 
-By virtue of being written using TensorFlow, it is trivial to run CMA on a GPU:
+By virtue of using TensorFlow, CMA should run on available GPUs without any code change. 
 
-```python
-with tf.device('/GPU:0'):
-    cma.search()
-```
+If you run into issues, check the official TF documentation: [Use a GPU](https://www.tensorflow.org/guide/gpu).
 
 ## More examples
 
