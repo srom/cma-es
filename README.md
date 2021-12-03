@@ -118,7 +118,7 @@ Check out an example logging progress to TensorBoard: [tensorboard_example.py][6
 
 ## Running on GPU
 
-By virtue of using TensorFlow, CMA should run on available GPUs without any code change. 
+By virtue of using TensorFlow, CMA should make use of available GPUs without any code change. 
 
 If you run into issues, check the official [TF documentation](https://www.tensorflow.org/guide/gpu).
 
